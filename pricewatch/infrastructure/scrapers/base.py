@@ -26,13 +26,13 @@ class Scraper(abc.ABC):
     """Strategy interface — every concrete scraper must implement this."""
 
     @abc.abstractmethod
-    def search(self, query: str, product_id: UUID) -> list[Listing]:
-        """Search for *query* and return normalised :class:`Listing` objects.
+    def scrape_product(self, url: str, product_id: UUID) -> Listing | None:
+        """Fetch and parse a specific product URL.
 
         Args:
-            query:      Free-text search string sent to the retailer.
+            url:        Exact URL of the product page.
             product_id: UUID of the :class:`~pricewatch.domain.models.Product`
-                        these listings belong to.
+                        this listing belongs to.
         """
 
 
@@ -44,17 +44,13 @@ class Scraper(abc.ABC):
 class BaseScraper(Scraper):
     """Template Method implementation of :class:`Scraper`.
 
-    Subclasses **must** override :meth:`parse`.  They may optionally override
-    :meth:`_build_url` or :meth:`_fetch`.
+    Subclasses **must** override :meth:`parse_product_page`.
 
-    Execution order for :meth:`search`:
+    Execution order for :meth:`scrape_product`:
 
-        1. ``_build_url(query, page)``  →  URL string
-        2. ``_fetch(url)``              →  raw HTML string
-        3. ``parse(html, query)``       →  list of raw :class:`Listing` objects
-        4. ``_normalize(listings)``     →  validated / cleaned listings
-
-    Multi-page scraping is handled by iterating pages up to ``max_pages``.
+        1. ``_fetch(url)``                 →  raw HTML string
+        2. ``parse_product_page(html, ...)``→  raw :class:`Listing` object
+        3. ``_normalize([listing])``       →  validated / cleaned listing
     """
 
     #: Retailer identifier — set in each concrete subclass.
@@ -90,31 +86,32 @@ class BaseScraper(Scraper):
     # Public Template Method entry-point
     # ------------------------------------------------------------------
 
-    def search(self, query: str, product_id: UUID) -> list[Listing]:
-        """Orchestrate fetch → parse → normalize across up to *max_pages*."""
-        all_listings: list[Listing] = []
-        for page in range(1, self.max_pages + 1):
-            url = self._build_url(query, page)
-            logger.debug("Fetching %s (page %d)", url, page)
+    def scrape_product(self, url: str, product_id: UUID) -> Listing | None:
+        """Fetch and parse a specific product URL.
+        
+        Args:
+            url: Exact URL of the product page.
+            product_id: UUID to assign to the extracted Listing.
+            
+        Returns:
+            A single Listing object, or None if scraping fails.
+        """
+        logger.info("%s: fetching product %s", self.retailer_id, url)
+        try:
             html = self._fetch(url)
-            page_listings = self.parse(html, query, product_id)
-            if not page_listings:
-                logger.debug("No listings on page %d — stopping pagination", page)
-                break
-            all_listings.extend(page_listings)
-            if page < self.max_pages:
-                time.sleep(self.request_delay)
-        return self._normalize(all_listings)
+            listing = self.parse_product_page(html, url, product_id)
+            if listing:
+                # Reuse normalize to validate the single listing
+                normalized = self._normalize([listing])
+                return normalized[0] if normalized else None
+            return None
+        except httpx.HTTPError as exc:
+            logger.error("%s: HTTP error fetching %s: %s", self.retailer_id, url, exc)
+            return None
 
     # ------------------------------------------------------------------
     # Steps that subclasses may / must override
     # ------------------------------------------------------------------
-
-    def _build_url(self, query: str, page: int) -> str:
-        """Return the URL for *query* on *page*.  Subclasses must override."""
-        raise NotImplementedError(
-            f"{type(self).__name__} must implement _build_url()"
-        )
 
     def _fetch(self, url: str) -> str:
         """Perform an HTTP GET and return the response body as a string."""
@@ -123,17 +120,11 @@ class BaseScraper(Scraper):
         return response.text
 
     @abc.abstractmethod
-    def parse(self, html: str, query: str, product_id: UUID) -> list[Listing]:
-        """Parse *html* and return a list of raw :class:`Listing` objects.
+    def parse_product_page(self, html: str, url: str, product_id: UUID) -> Listing | None:
+        """Parse the HTML of a specific product page.
 
-        This is the only method subclasses **must** implement.  The returned
-        listings will be passed through :meth:`_normalize` before being
-        returned to callers.
-
-        Args:
-            html:       Raw HTML of the search-results page.
-            query:      Original search query (may be used for tagging).
-            product_id: UUID to assign to each listing.
+        Returns:
+            A raw Listing object, or None if parsing fails.
         """
 
     # ------------------------------------------------------------------

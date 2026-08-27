@@ -43,13 +43,16 @@ class ProductORM(Base):
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    search_query: Mapped[str] = mapped_column(String(255), nullable=False)
+    url: Mapped[str] = mapped_column(String(1024), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
 
     listings: Mapped[list[ListingORM]] = relationship(
         "ListingORM", back_populates="product", cascade="all, delete-orphan"
+    )
+    alerts: Mapped[list[AlertORM]] = relationship(
+        "AlertORM", back_populates="product", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
@@ -149,6 +152,8 @@ class AlertORM(Base):
     target_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     channel: Mapped[str] = mapped_column(String(64), nullable=False, default="console")
     triggered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    product: Mapped[ProductORM] = relationship("ProductORM", back_populates="alerts")
 
     def __repr__(self) -> str:
         return (

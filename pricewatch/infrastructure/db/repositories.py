@@ -36,7 +36,7 @@ def _product_to_orm(product: Product) -> ProductORM:
     return ProductORM(
         id=product.id,
         name=product.name,
-        search_query=product.search_query,
+        url=product.url,
         created_at=product.created_at,
     )
 
@@ -45,7 +45,7 @@ def _orm_to_product(row: ProductORM) -> Product:
     return Product(
         id=row.id,
         name=row.name,
-        search_query=row.search_query,
+        url=row.url,
         created_at=row.created_at,
     )
 
@@ -130,6 +130,13 @@ class ProductRepository:
         """Return every tracked product."""
         rows = self._session.query(ProductORM).order_by(ProductORM.created_at).all()
         return [_orm_to_product(r) for r in rows]
+
+    def delete(self, product_id: uuid.UUID) -> None:
+        """Delete product and its cascaded data."""
+        row = self._session.get(ProductORM, product_id)
+        if row:
+            self._session.delete(row)
+            self._session.flush()
 
 
 # ---------------------------------------------------------------------------

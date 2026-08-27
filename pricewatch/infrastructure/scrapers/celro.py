@@ -47,93 +47,83 @@ class CelRoScraper(BaseScraper):
     retailer_id = _RETAILER_ID
 
     # ------------------------------------------------------------------
-    # Template Method step: build URL
+    # Template Method step: parse_product_page
     # ------------------------------------------------------------------
 
-    def _build_url(self, query: str, page: int) -> str:
-        encoded = quote_plus(query.replace(" ", "+"))
-        if page == 1:
-            return f"{_BASE_URL}/cauta/{encoded}/"
-        return f"{_BASE_URL}/cauta/{encoded}/0j-{page}/"
-
-    # ------------------------------------------------------------------
-    # Template Method step: parse (the only *required* override)
-    # ------------------------------------------------------------------
-
-    def parse(self, html: str, query: str, product_id: UUID) -> list[Listing]:
-        """Extract product listings from a cel.ro search results page.
+    def parse_product_page(self, html: str, url: str, product_id: UUID) -> Listing | None:
+        """Extract a Listing from a cel.ro product page.
 
         Args:
-            html:       Raw HTML string of a cel.ro ``/cauta/`` page.
-            query:      Original search query (unused in parsing, kept for
-                        interface consistency).
-            product_id: UUID assigned to each returned :class:`Listing`.
-
-        Returns:
-            Unvalidated :class:`Listing` objects — validation is applied by
-            the inherited :meth:`~BaseScraper._normalize` step.
+            html:       Raw HTML string of the product page.
+            url:        The product URL.
+            product_id: UUID assigned to the returned Listing.
         """
         soup = BeautifulSoup(html, "lxml")
-        cards: list[Tag] = soup.select(_CARD_SEL)
-        logger.debug("cel.ro: found %d product cards in HTML", len(cards))
-
-        listings: list[Listing] = []
-        for card in cards:
-            listing = self._parse_card(card, product_id)
-            if listing is not None:
-                listings.append(listing)
-        return listings
-
-    # ------------------------------------------------------------------
-    # Private helpers
-    # ------------------------------------------------------------------
-
-    def _parse_card(self, card: Tag, product_id: UUID) -> Listing | None:
-        """Extract a :class:`Listing` from a single product card ``<div>``.
-
-        Returns ``None`` if any required field is missing so that
-        :meth:`parse` can safely skip malformed cards without crashing.
-        """
-        # --- external_id (retailer's own product ID) --------------------
-        external_id: str | None = card.get("data-pid_prod")  # type: ignore[assignment]
-
+        
         # --- title -------------------------------------------------------
-        title_tag = card.select_one(_TITLE_SEL)
+        title_tag = soup.select_one("h1")
         if title_tag is None:
-            logger.debug("Skipping card %s: no title element", external_id)
+            logger.debug("cel.ro: No h1 title found on %s", url)
             return None
         title = title_tag.get_text(strip=True)
 
-        # --- URL ---------------------------------------------------------
-        link_tag = card.select_one(_LINK_SEL)
-        if link_tag is None:
-            logger.debug("Skipping card %s: no link element", external_id)
-            return None
-        url: str = link_tag.get("href", "")  # type: ignore[assignment]
-        if not url.startswith("http"):
-            url = f"{_BASE_URL}{url}"
+        # --- Parse JSON-LD for Price and Image -----------------------------
+        import json
+        price = None
+        image_url = None
+        
+        for script in soup.find_all("script", type="application/ld+json"):
+            try:
+                data = json.loads(script.string)
+                if isinstance(data, list):
+                    for item in data:
+                        if isinstance(item, dict) and "offers" in item and "price" in item["offers"]:
+                            price = Decimal(str(item["offers"]["price"]))
+                        if isinstance(item, dict) and "image" in item:
+                            if isinstance(item["image"], list):
+                                image_url = item["image"][0]
+                            else:
+                                image_url = item["image"]
+                elif isinstance(data, dict):
+                    if "offers" in data and "price" in data["offers"]:
+                        price = Decimal(str(data["offers"]["price"]))
+                    if "image" in data:
+                        if isinstance(data["image"], list):
+                            image_url = data["image"][0]
+                        else:
+                            image_url = data["image"]
+            except (json.JSONDecodeError, InvalidOperation, KeyError, TypeError):
+                continue
+                
+        # Fallback for price if JSON-LD fails
+        if price is None:
+            price_tag = soup.select_one("span.price") or soup.select_one("[itemprop='price']")
+            if price_tag is None:
+                logger.debug("cel.ro: No price element found on %s", url)
+                return None
+                
+            price_raw = price_tag.get("content") or price_tag.get_text(strip=True)
+            try:
+                price = Decimal(str(price_raw).replace(",", ".").strip())
+            except InvalidOperation:
+                logger.debug("cel.ro: Unparseable price %r on %s", price_raw, url)
+                return None
 
-        # --- price -------------------------------------------------------
-        price_tag = card.select_one(_PRICE_SEL)
-        if price_tag is None:
-            logger.debug("Skipping card %s: no price element", external_id)
-            return None
-        # Prefer the machine-readable ``content`` attribute (pure integer, no
-        # thousands separator) over the display text which may include "lei".
-        price_raw = price_tag.get("content") or price_tag.get_text(strip=True)
-        try:
-            # Strip any stray whitespace or non-numeric characters
-            price = Decimal(str(price_raw).replace(",", ".").strip())
-        except InvalidOperation:
-            logger.debug("Skipping card %s: unparseable price %r", external_id, price_raw)
-            return None
-
-        # --- image -------------------------------------------------------
-        img_tag = card.select_one(_IMAGE_SEL)
-        image_url: str | None = None
-        if img_tag is not None:
-            image_url = img_tag.get("src")  # type: ignore[assignment]
-
+        # --- external_id -------------------------------------------------
+        form_tag = soup.select_one("form[name='buy']")
+        external_id = None
+        if form_tag:
+            pid_input = form_tag.select_one("input[name='products_id']")
+            if pid_input:
+                external_id = pid_input.get("value")
+        
+        if not external_id:
+            parts = url.strip("/").split("-")
+            if len(parts) > 1 and parts[-1] == "l" and parts[-2].startswith("p"):
+                external_id = parts[-2][1:]
+            else:
+                external_id = url
+                
         return Listing(
             product_id=product_id,
             retailer_id=_RETAILER_ID,
@@ -141,6 +131,6 @@ class CelRoScraper(BaseScraper):
             price=price,
             currency="RON",
             url=url,
-            external_id=external_id,
+            external_id=str(external_id),
             image_url=image_url,
         )

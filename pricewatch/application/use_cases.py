@@ -28,20 +28,20 @@ class AddProduct:
         self.alert_repo = AlertRepository(session)
 
     def execute(
-        self, name: str, search_query: str, target_price: float | None = None, channel: str = "console"
+        self, name: str, url: str, target_price: float | None = None, channel: str = "console"
     ) -> Product:
         """Create a product and optionally a price-drop alert.
 
         Args:
             name: Human-readable name.
-            search_query: String to search on retailers.
+            url: Exact product URL on a supported retailer.
             target_price: If set, create an alert for this price.
             channel: The notification channel for the alert.
 
         Returns:
             The created Product.
         """
-        product = Product(name=name, search_query=search_query)
+        product = Product(name=name, url=url)
         self.product_repo.add(product)
         
         if target_price is not None:
@@ -54,7 +54,7 @@ class AddProduct:
             self.alert_repo.add(alert)
             
         self.session.commit()
-        logger.info("Added product: %r (query: %r)", name, search_query)
+        logger.info("Added product: %r (url: %r)", name, url)
         return product
 
 
@@ -76,100 +76,79 @@ class RefreshPrices:
             return
 
         retailers = self.factory.available()
-        logger.info("Starting price refresh for %d products across %d retailers", len(products), len(retailers))
+        logger.info("Starting price refresh for %d products", len(products))
 
+        import urllib.parse
         for product in products:
-            for retailer_id in retailers:
-                scraper = self.factory.get(retailer_id)
-                logger.info("Scraping %s on %s...", product.name, retailer_id)
-                try:
-                    listings = scraper.search(product.search_query, product.id)
-                except Exception:
-                    logger.exception("Scraping failed for %s on %s", product.name, retailer_id)
-                    continue
-
-                if not listings:
-                    logger.debug("No listings found for %s on %s", product.name, retailer_id)
-                    continue
-
-                # Filter out obvious accessories unless the user explicitly searched for them
-                query_lower = product.search_query.lower()
-                
-                # Split query into words to ensure they all exist in the title
-                query_words = query_lower.split()
-                
-                filtered_listings = []
-                banned_words = {"husa", "folie", "cablu", "incarcator", "sticla", "glass", "protectie", "case", "cover", "adaptor", "suport"}
-                
-                for l in listings:
-                    title_lower = l.title.lower()
+            domain = urllib.parse.urlparse(product.url).netloc.replace("www.", "")
+            
+            scraper = None
+            for r_id in retailers:
+                if r_id in domain:
+                    scraper = self.factory.get(r_id)
+                    break
                     
-                    # 1. Must contain all words from the search query
-                    if not all(word in title_lower for word in query_words):
-                        continue
-                        
-                    # 2. Filter out banned accessory words UNLESS the user actually searched for them
-                    is_banned = False
-                    for banned in banned_words:
-                        # If the banned word is in the title, but NOT in the search query, exclude it
-                        if banned in title_lower and banned not in query_lower:
-                            is_banned = True
-                            break
-                    
-                    if is_banned:
-                        continue
-                        
-                    filtered_listings.append(l)
-
-                if not filtered_listings:
-                    logger.debug("No valid matching listings found for %s on %s after filtering", product.name, retailer_id)
-                    continue
-                    
-                # Take the cheapest matching listing from the FILTERED list
-                best_listing = min(filtered_listings, key=lambda l: l.price)
+            if not scraper:
+                logger.error("No scraper available for domain %s (product %s)", domain, product.name)
+                continue
                 
-                # Check if we already have this listing
-                assert best_listing.external_id is not None
-                existing_listing = self.price_repo.get_listing_by_external_id(retailer_id, best_listing.external_id)
-                
-                if not existing_listing:
-                    # Brand new listing
-                    self.price_repo.add_listing(best_listing)
-                    existing_listing = best_listing
-                    old_price = None
-                else:
-                    # We have seen this before. Get the latest price point to check for changes
-                    history = self.price_repo.get_history(existing_listing.id)
-                    latest_point = history[-1] if history else None
-                    old_price = latest_point.price if latest_point else None
+            logger.info("Scraping %s via %s...", product.name, scraper.retailer_id)
+            try:
+                listing = scraper.scrape_product(product.url, product.id)
+            except Exception:
+                logger.exception("Scraping failed for %s", product.name)
+                continue
 
-                # Record the new price point
-                new_point = PricePoint(
-                    listing_id=existing_listing.id,
-                    price=best_listing.price,
-                )
-                self.price_repo.add_price_point(new_point)
-                
-                # Commit the transaction so far (or maybe at the very end, but doing it here ensures it's saved)
-                # We'll just flush to get IDs, commit at the very end of the use case.
-                self.session.flush()
+            if not listing:
+                logger.debug("No listing found for %s", product.name)
+                continue
 
-                # Determine if we should emit an event
-                if old_price != best_listing.price:
-                    event = PriceEvent(
-                        product_id=product.id,
-                        listing_id=existing_listing.id,
-                        retailer_id=retailer_id,
-                        title=best_listing.title,
-                        new_price=best_listing.price,
-                        currency=best_listing.currency,
-                        url=best_listing.url,
-                        old_price=old_price,
-                    )
-                    self.event_bus.publish(event)
-                    
+            # Check if we already have this listing
+            assert listing.external_id is not None
+            existing_listing = self.price_repo.get_listing_by_external_id(scraper.retailer_id, listing.external_id)
+            
+            if not existing_listing:
+                # Brand new listing
+                self.price_repo.add_listing(listing)
+                existing_listing = listing
+                old_price = None
+            else:
+                history = self.price_repo.get_history(existing_listing.id)
+                latest_point = history[-1] if history else None
+                old_price = latest_point.price if latest_point else None
+
+            # Always add a new PricePoint for today's scrape
+            pt = PricePoint(listing_id=existing_listing.id, price=listing.price)
+            self.price_repo.add_price_point(pt)
+            
+            # Emit an event for the UI or alerts to consume
+            event = PriceEvent(
+                product_id=product.id,
+                listing_id=existing_listing.id,
+                retailer_id=scraper.retailer_id,
+                title=listing.title,
+                new_price=listing.price,
+                currency=listing.currency,
+                url=listing.url,
+                old_price=old_price,
+            )
+            self.event_bus.publish(event)
+            
         self.session.commit()
         logger.info("Price refresh complete.")
+
+
+class RemoveProduct:
+    """Removes a product and all its cascaded history/alerts."""
+    
+    def __init__(self, session: Session) -> None:
+        self.session = session
+        self.product_repo = ProductRepository(session)
+        
+    def execute(self, product_id: UUID) -> None:
+        self.product_repo.delete(product_id)
+        self.session.commit()
+        logger.info("Removed product ID: %s", product_id)
 
 
 class AlertChecker:

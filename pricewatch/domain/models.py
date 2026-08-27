@@ -35,7 +35,7 @@ class Product:
     """
 
     name: str
-    search_query: str
+    url: str
     id: UUID = field(default_factory=uuid4)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
