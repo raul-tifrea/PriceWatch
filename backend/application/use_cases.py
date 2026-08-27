@@ -11,10 +11,10 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from pricewatch.domain.events import PriceEvent, PriceEventBus
-from pricewatch.domain.models import Product, Listing, PricePoint, Alert
-from pricewatch.infrastructure.db.repositories import ProductRepository, PriceRepository, AlertRepository
-from pricewatch.infrastructure.scrapers.factory import ScraperFactory
+from backend.domain.events import PriceEvent, PriceEventBus
+from backend.domain.models import Product, Listing, PricePoint, Alert
+from backend.infrastructure.db.repositories import ProductRepository, PriceRepository, AlertRepository
+from backend.infrastructure.scrapers.factory import ScraperFactory
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 """Script to create all database tables based on ORM models."""
-from pricewatch.infrastructure.db.orm_models import Base
-from pricewatch.infrastructure.db.engine import engine
+from backend.infrastructure.db.orm_models import Base
+from backend.infrastructure.db.engine import engine
 
 def main():
     print("Creating database tables...")

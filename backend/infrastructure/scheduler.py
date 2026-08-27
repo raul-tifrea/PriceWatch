@@ -8,10 +8,10 @@ from apscheduler.schedulers.background import BackgroundScheduler  # type: ignor
 from apscheduler.triggers.interval import IntervalTrigger  # type: ignore[import-untyped]
 from sqlalchemy.orm import Session
 
-from pricewatch.application.use_cases import RefreshPrices
-from pricewatch.domain.events import PriceEventBus
-from pricewatch.infrastructure.db.engine import SessionLocal
-from pricewatch.infrastructure.scrapers.factory import ScraperFactory
+from backend.application.use_cases import RefreshPrices
+from backend.domain.events import PriceEventBus
+from backend.infrastructure.db.engine import SessionLocal
+from backend.infrastructure.scrapers.factory import ScraperFactory
 
 logger = logging.getLogger(__name__)
 

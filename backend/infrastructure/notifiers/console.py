@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import logging
 
-from pricewatch.domain.events import PriceEvent
-from pricewatch.infrastructure.notifiers.base import Notifier
+from backend.domain.events import PriceEvent
+from backend.infrastructure.notifiers.base import Notifier
 
 logger = logging.getLogger(__name__)
 

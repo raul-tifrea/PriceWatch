@@ -17,8 +17,8 @@ from uuid import UUID
 
 from bs4 import BeautifulSoup, Tag
 
-from pricewatch.domain.models import Listing
-from pricewatch.infrastructure.scrapers.base import BaseScraper
+from backend.domain.models import Listing
+from backend.infrastructure.scrapers.base import BaseScraper
 
 logger = logging.getLogger(__name__)
 

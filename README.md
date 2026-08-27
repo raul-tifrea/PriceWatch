@@ -1,64 +1,40 @@
-# PriceWatch
+# PriceWatch 🛍️
 
-A multi-site price tracker built as a portfolio project demonstrating layered architecture, design patterns, and testability.
+PriceWatch is a modern, full-stack application designed to help you track product prices across major retailers, visualize price history, and receive alerts when prices drop below your target threshold.
 
-## Architecture
+## Features
 
-```
-pricewatch/
-├── domain/          # Pure dataclasses — no framework dependencies
-├── application/     # Use cases (wiring domain + infrastructure)
-├── infrastructure/  # Scrapers, SQLAlchemy repos, scheduler, notifier
-└── presentation/    # Streamlit dashboard (next pass)
-```
+- **Price Tracking**: Add a product URL (e.g., from `cel.ro`) and the system will automatically scrape and track its current price.
+- **Price History Graphs**: View a beautiful, interactive chart showing how the price has changed over time (1D, 1W, 1M, 6M, Max).
+- **Target Alerts**: Set a target price. The system calculates your overall savings and alerts you if the price drops below your target.
+- **Clean Architecture**: Built with a decoupled FastAPI backend and a responsive React frontend.
 
-## Design Patterns
+## Tech Stack
 
-| Pattern | Location | Purpose |
-|---|---|---|
-| **Strategy** | `infrastructure/scrapers/base.py` | `Scraper` ABC — every retailer implements the same interface |
-| **Template Method** | `infrastructure/scrapers/base.py` | `BaseScraper.search()` orchestrates fetch→parse→normalize; subclasses override `parse()` |
-| **Factory** | `infrastructure/scrapers/factory.py` | `ScraperFactory.get("cel.ro")` — decouples callers from concrete classes |
-| **Repository** | `infrastructure/db/repositories.py` | DB access behind a clean interface; application never imports SQLAlchemy |
+- **Backend**: Python, FastAPI, SQLAlchemy, PostgreSQL, BeautifulSoup (for scraping).
+- **Frontend**: React, Vite, React Router, Recharts, Vanilla CSS (Glassmorphism design).
 
-## Retailers
+## How to Run
 
-| Site | Scraper | Method |
-|---|---|---|
-| `cel.ro` | `CelRoScraper` | httpx + BeautifulSoup (server-rendered HTML) |
-| `altex.ro` | `AltexScraper` | Playwright + `__NEXT_DATA__` JSON (Next.js SSR) |
+To run the application locally, you will need to start the database, the backend API, and the frontend server.
 
-## Setup
-
-### 1. Start Postgres
-```bash
+### 1. Start the Database (PostgreSQL)
+Ensure Docker is running on your machine, then start the database container:
+```powershell
 docker compose up -d
 ```
 
-### 2. Install dependencies
-```bash
-pip install -e ".[dev]"
-playwright install chromium
+### 2. Start the Backend API (FastAPI)
+Open a terminal in the root `PriceWatch/` directory and run the server:
+```powershell
+python -m scripts.run_api
 ```
+*(The API will start on `http://localhost:8000`)*
 
-### 3. Create DB tables
-```bash
-python -m pricewatch.infrastructure.db
+### 3. Start the Frontend (React)
+Open a **second** terminal, navigate to the `frontend/` directory, and start the Vite dev server:
+```powershell
+cd frontend
+npm run dev
 ```
-
-### 4. Run tests
-```bash
-pytest -v
-```
-
-### 5. Capture altex.ro fixture (run once)
-```bash
-python scripts/capture_altex_fixture.py
-```
-
-## Environment
-
-Copy `.env.example` to `.env`:
-```
-DATABASE_URL=postgresql+psycopg2://pricewatch:0000@localhost:5432/pricewatch
-```
+*(The UI will start on `http://localhost:5173` — open this URL in your browser!)*

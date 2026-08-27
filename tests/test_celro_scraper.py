@@ -21,7 +21,7 @@ from uuid import uuid4
 
 import pytest
 
-from pricewatch.infrastructure.scrapers.celro import CelRoScraper
+from backend.infrastructure.scrapers.celro import CelRoScraper
 
 # ---------------------------------------------------------------------------
 # Fixtures

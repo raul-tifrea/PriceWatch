@@ -6,11 +6,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from pricewatch.infrastructure.db.engine import SessionLocal
-from pricewatch.application.use_cases import AddProduct, RefreshPrices, GetPriceHistory, RemoveProduct
-from pricewatch.infrastructure.db.repositories import ProductRepository
-from pricewatch.infrastructure.scrapers.factory import ScraperFactory
-from pricewatch.domain.events import PriceEventBus
+from backend.infrastructure.db.engine import SessionLocal
+from backend.application.use_cases import AddProduct, RefreshPrices, GetPriceHistory, RemoveProduct
+from backend.infrastructure.db.repositories import ProductRepository
+from backend.infrastructure.scrapers.factory import ScraperFactory
+from backend.domain.events import PriceEventBus
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class ProductResponse(BaseModel):
     url: str
     created_at: str
 
-from pricewatch.infrastructure.db.orm_models import AlertORM
+from backend.infrastructure.db.orm_models import AlertORM
 
 @app.get("/api/products")
 def list_products(db = Depends(get_db)):

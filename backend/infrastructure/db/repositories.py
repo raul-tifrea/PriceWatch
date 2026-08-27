@@ -18,8 +18,8 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
-from pricewatch.domain.models import Alert, Listing, PricePoint, Product
-from pricewatch.infrastructure.db.orm_models import (
+from backend.domain.models import Alert, Listing, PricePoint, Product
+from backend.infrastructure.db.orm_models import (
     AlertORM,
     ListingORM,
     PricePointORM,

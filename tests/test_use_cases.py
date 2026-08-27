@@ -7,12 +7,12 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from pricewatch.application.use_cases import RefreshPrices, AddProduct, AlertChecker
-from pricewatch.domain.events import PriceEventBus
-from pricewatch.domain.models import Product, Listing
-from pricewatch.infrastructure.db.orm_models import Base
-from pricewatch.infrastructure.scrapers.base import Scraper
-from pricewatch.infrastructure.scrapers.factory import ScraperFactory
+from backend.application.use_cases import RefreshPrices, AddProduct, AlertChecker
+from backend.domain.events import PriceEventBus
+from backend.domain.models import Product, Listing
+from backend.infrastructure.db.orm_models import Base
+from backend.infrastructure.scrapers.base import Scraper
+from backend.infrastructure.scrapers.factory import ScraperFactory
 
 
 class MockScraper(Scraper):
@@ -54,7 +54,7 @@ def test_add_product_creates_product_and_alert(session):
     assert product.id is not None
     
     # Check that alert was created
-    from pricewatch.infrastructure.db.repositories import AlertRepository
+    from backend.infrastructure.db.repositories import AlertRepository
     repo = AlertRepository(session)
     active_alerts = repo.list_active()
     assert len(active_alerts) == 1
@@ -118,7 +118,7 @@ def test_refresh_prices_emits_event_on_price_drop(session):
     refresh_uc.execute() # Will fetch 3500 again for Laptop and Laptop2
     
     # The alert should be triggered for Laptop2
-    from pricewatch.infrastructure.db.repositories import AlertRepository
+    from backend.infrastructure.db.repositories import AlertRepository
     repo = AlertRepository(session)
     active_alerts = repo.list_active()
     assert len(active_alerts) == 0 # Alert was triggered and is no longer active

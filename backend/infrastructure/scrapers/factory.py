@@ -11,8 +11,8 @@ No other code needs to change — the application layer calls
 """
 from __future__ import annotations
 
-from pricewatch.infrastructure.scrapers.base import Scraper
-from pricewatch.infrastructure.scrapers.celro import CelRoScraper
+from backend.infrastructure.scrapers.base import Scraper
+from backend.infrastructure.scrapers.celro import CelRoScraper
 
 # Registry maps the Retailer.id string to the concrete scraper class.
 # Order matters for documentation but not for lookup.

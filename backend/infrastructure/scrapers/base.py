@@ -13,7 +13,7 @@ from uuid import UUID
 
 import httpx
 
-from pricewatch.domain.models import Listing
+from backend.domain.models import Listing
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import abc
 
-from pricewatch.domain.events import PriceEvent
+from backend.domain.events import PriceEvent
 
 
 class Notifier(abc.ABC):

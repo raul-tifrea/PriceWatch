@@ -2,8 +2,8 @@
 
 Run ``python -m pricewatch.infrastructure.db`` to create all tables.
 """
-from pricewatch.infrastructure.db.engine import engine
-from pricewatch.infrastructure.db.orm_models import Base
+from backend.infrastructure.db.engine import engine
+from backend.infrastructure.db.orm_models import Base
 
 
 def create_tables() -> None:
