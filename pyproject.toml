@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "pricewatch"
@@ -15,12 +15,14 @@ dependencies = [
     "apscheduler>=3.10",
     "streamlit>=1.35",
     "python-dotenv>=1.0",
+    "plotly>=5.22.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.2",
     "pytest-httpx>=0.30",
+    "playwright>=1.44",
 ]
 
 [tool.setuptools.packages.find]

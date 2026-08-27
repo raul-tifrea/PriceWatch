@@ -18,8 +18,9 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
-from pricewatch.domain.models import Listing, PricePoint, Product
+from pricewatch.domain.models import Alert, Listing, PricePoint, Product
 from pricewatch.infrastructure.db.orm_models import (
+    AlertORM,
     ListingORM,
     PricePointORM,
     ProductORM,
@@ -199,3 +200,50 @@ class PriceRepository:
             .all()
         )
         return [_orm_to_price_point(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Alert Repository
+# ---------------------------------------------------------------------------
+
+def _orm_to_alert(orm_obj: AlertORM) -> Alert:
+    return Alert(
+        id=orm_obj.id,
+        product_id=orm_obj.product_id,
+        target_price=orm_obj.target_price,
+        channel=orm_obj.channel,
+        triggered_at=orm_obj.triggered_at,
+    )
+
+def _alert_to_orm(domain_obj: Alert) -> AlertORM:
+    return AlertORM(
+        id=domain_obj.id,
+        product_id=domain_obj.product_id,
+        target_price=domain_obj.target_price,
+        channel=domain_obj.channel,
+        triggered_at=domain_obj.triggered_at,
+    )
+
+class AlertRepository:
+    """Manages persistence for user-configured :class:`~pricewatch.domain.models.Alert`."""
+
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def add(self, alert: Alert) -> None:
+        """Save a new alert to the database."""
+        orm_obj = _alert_to_orm(alert)
+        self._session.add(orm_obj)
+
+    def list_active(self) -> list[Alert]:
+        """Return all alerts that have not yet been triggered."""
+        rows = self._session.query(AlertORM).filter_by(triggered_at=None).all()
+        return [_orm_to_alert(r) for r in rows]
+
+    def update(self, alert: Alert) -> None:
+        """Update an existing alert (e.g. mark it as triggered)."""
+        orm_obj = self._session.get(AlertORM, alert.id)
+        if orm_obj:
+            orm_obj.target_price = alert.target_price
+            orm_obj.channel = alert.channel
+            orm_obj.triggered_at = alert.triggered_at

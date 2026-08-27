@@ -18,7 +18,6 @@ from pricewatch.infrastructure.scrapers.celro import CelRoScraper
 # Order matters for documentation but not for lookup.
 _REGISTRY: dict[str, type[Scraper]] = {
     "cel.ro": CelRoScraper,
-    # "altex.ro": AltexScraper,  ← will be added in the next pass
 }
 
 

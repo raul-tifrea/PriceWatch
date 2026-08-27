@@ -122,7 +122,36 @@ class PricePointORM(Base):
         DateTime, nullable=False, default=datetime.utcnow
     )
 
-    listing: Mapped[ListingORM] = relationship("PricePointORM", back_populates="price_points")  # type: ignore[assignment]
+    listing: Mapped[ListingORM] = relationship("ListingORM", back_populates="price_points")
 
     def __repr__(self) -> str:
         return f"<PricePointORM id={self.id} price={self.price} at={self.recorded_at}>"
+
+
+class AlertORM(Base):
+    """Persisted representation of :class:`~pricewatch.domain.models.Alert`.
+
+    When the scheduler detects ``listing.price <= target_price`` for a tracked
+    product, it fires the alert and sets ``triggered_at``.
+    """
+
+    __tablename__ = "alerts"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("products.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    target_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    channel: Mapped[str] = mapped_column(String(64), nullable=False, default="console")
+    triggered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    def __repr__(self) -> str:
+        return (
+            f"<AlertORM id={self.id} product={self.product_id} "
+            f"target={self.target_price} channel={self.channel!r}>"
+        )
