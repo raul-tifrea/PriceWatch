@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import { Trash2, ExternalLink } from 'lucide-react';
 import ProductModal from './ProductModal';
-
 const ProductCard = ({ product, onRemove }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Calculate percentage change since first added (overall savings)
   let percentageChange = 0;
   if (product.initial_price && product.current_price) {
     percentageChange = ((product.current_price - product.initial_price) / product.initial_price) * 100;
   }
-
   let badgeClass = "badge-neutral";
   let badgeText = "0%";
-  
   if (percentageChange < -0.1) {
     badgeClass = "badge-success";
     badgeText = `${percentageChange.toFixed(1)}% (Drop)`;
@@ -21,9 +16,7 @@ const ProductCard = ({ product, onRemove }) => {
     badgeClass = "badge-danger";
     badgeText = `+${percentageChange.toFixed(1)}% (Up)`;
   }
-
-  const isGreatDeal = percentageChange <= -10; // 10% or more drop
-
+  const isGreatDeal = percentageChange <= -10; 
   let retailerName = 'Unknown';
   let retailerBadgeClass = 'badge-unknown';
   try {
@@ -39,17 +32,13 @@ const ProductCard = ({ product, onRemove }) => {
       retailerName = hostname.replace('www.', '');
     }
   } catch (e) {
-    // Ignore
   }
-
   const handleCardClick = (e) => {
-    // Prevent opening modal if clicking on the remove button or the link
     if (e.target.closest('button') || e.target.closest('a')) {
       return;
     }
     setIsModalOpen(true);
   };
-
   return (
     <>
       <div 
@@ -92,7 +81,6 @@ const ProductCard = ({ product, onRemove }) => {
             <Trash2 size={16} />
           </button>
         </div>
-        
         <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <div className="text-muted text-small" style={{ marginBottom: '0.2rem' }}>Current Price</div>
@@ -107,7 +95,6 @@ const ProductCard = ({ product, onRemove }) => {
           </div>
         </div>
       </div>
-
       {isModalOpen && (
         <ProductModal 
           product={product} 
@@ -117,5 +104,4 @@ const ProductCard = ({ product, onRemove }) => {
     </>
   );
 };
-
 export default ProductCard;

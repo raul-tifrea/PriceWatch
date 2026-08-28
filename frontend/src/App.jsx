@@ -4,21 +4,17 @@ import { Activity, PlusCircle, Sun, Moon } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import AddProduct from './pages/AddProduct';
 import './index.css';
-
 function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'dark';
   });
-
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
-
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
-
   return (
     <Router>
       <div className="app-container">
@@ -44,7 +40,6 @@ function App() {
             </Link>
           </nav>
         </header>
-        
         <main>
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -55,5 +50,4 @@ function App() {
     </Router>
   );
 }
-
 export default App;

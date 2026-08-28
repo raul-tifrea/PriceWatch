@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { getProducts, removeProduct, refreshPrices } from '../api';
 import { RefreshCw } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-
 function Dashboard() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [sortBy, setSortBy] = useState('newest'); // 'newest', 'drop', 'price-asc', 'price-desc'
-
+  const [sortBy, setSortBy] = useState('newest'); 
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
@@ -19,16 +17,13 @@ function Dashboard() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchProducts();
-    // Silently poll for new prices every 60 seconds
     const interval = setInterval(() => {
       fetchProducts();
     }, 60000);
     return () => clearInterval(interval);
   }, []);
-
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
@@ -40,7 +35,6 @@ function Dashboard() {
       setRefreshing(false);
     }
   };
-
   const handleRemove = async (id) => {
     if (!window.confirm("Are you sure you want to stop tracking this product?")) return;
     try {
@@ -50,7 +44,6 @@ function Dashboard() {
       console.error("Failed to remove product", error);
     }
   };
-
   const sortedProducts = [...products].sort((a, b) => {
     if (sortBy === 'newest') {
       return new Date(b.created_at) - new Date(a.created_at);
@@ -64,15 +57,13 @@ function Dashboard() {
     if (sortBy === 'drop') {
       const dropA = a.initial_price && a.current_price ? ((a.current_price - a.initial_price) / a.initial_price) : 0;
       const dropB = b.initial_price && b.current_price ? ((b.current_price - b.initial_price) / b.initial_price) : 0;
-      return dropA - dropB; // Most negative (biggest drop) first
+      return dropA - dropB; 
     }
     return 0;
   });
-
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '3rem' }}>Loading products...</div>;
   }
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -86,7 +77,6 @@ function Dashboard() {
           {refreshing ? "Scraping..." : "Refresh Prices Now"}
         </button>
       </div>
-
       {products.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>You aren't tracking any products yet.</p>
@@ -116,5 +106,4 @@ function Dashboard() {
     </div>
   );
 }
-
 export default Dashboard;

@@ -1,17 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { X, TrendingDown, TrendingUp, DollarSign, Target, Calendar } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
 const ProductModal = ({ product, onClose }) => {
-  const [timeRange, setTimeRange] = useState('1M'); // '1D', '1W', '1M', '6M', 'MAX'
-
-  // Filter history based on selected time range
+  const [timeRange, setTimeRange] = useState('1M'); 
   const filteredHistory = useMemo(() => {
     if (!product.history || product.history.length === 0) return [];
-    
     const now = new Date();
     let cutoffDate = new Date();
-    
     switch (timeRange) {
       case '1W':
         cutoffDate.setDate(now.getDate() - 7);
@@ -24,29 +19,23 @@ const ProductModal = ({ product, onClose }) => {
         break;
       case 'MAX':
       default:
-        cutoffDate = new Date(0); // Beginning of time
+        cutoffDate = new Date(0); 
         break;
     }
-    
     return product.history.filter(pt => new Date(pt.date) >= cutoffDate);
   }, [product.history, timeRange]);
-
-  // Compute stats
   const stats = useMemo(() => {
     if (!product.history || product.history.length === 0) return null;
-    
     const prices = product.history.map(pt => pt.price);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
     const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-    
     return {
       min: minPrice,
       max: maxPrice,
       avg: avgPrice
     };
   }, [product.history]);
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -61,9 +50,8 @@ const ProductModal = ({ product, onClose }) => {
             <X size={24} />
           </button>
         </div>
-        
         <div className="modal-body">
-          {/* Time Range Toggles */}
+          {}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
             <div className="toggle-group">
               {['1W', '1M', '6M', 'MAX'].map(range => (
@@ -77,8 +65,7 @@ const ProductModal = ({ product, onClose }) => {
               ))}
             </div>
           </div>
-
-          {/* Graph */}
+          {}
           <div style={{ height: '300px', width: '100%' }}>
             {filteredHistory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -109,8 +96,7 @@ const ProductModal = ({ product, onClose }) => {
               </div>
             )}
           </div>
-
-          {/* Stats Grid */}
+          {}
           {stats && (
             <div className="stats-grid">
               <div className="stat-box">
@@ -121,7 +107,6 @@ const ProductModal = ({ product, onClose }) => {
                   {stats.min.toLocaleString()} RON
                 </div>
               </div>
-              
               <div className="stat-box">
                 <div className="stat-box-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
                   <TrendingUp size={14} /> Highest Price
@@ -130,7 +115,6 @@ const ProductModal = ({ product, onClose }) => {
                   {stats.max.toLocaleString()} RON
                 </div>
               </div>
-
               <div className="stat-box">
                 <div className="stat-box-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
                   <DollarSign size={14} /> Average Price
@@ -139,15 +123,7 @@ const ProductModal = ({ product, onClose }) => {
                   {stats.avg.toFixed(2)} RON
                 </div>
               </div>
-              
-              <div className="stat-box">
-                <div className="stat-box-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                  <Target size={14} /> Alert Target
-                </div>
-                <div className="stat-box-value" style={{ color: product.target_price ? 'var(--primary-color)' : 'var(--text-muted)' }}>
-                  {product.target_price ? `${product.target_price.toLocaleString()} RON` : 'Not Set'}
-                </div>
-              </div>
+
             </div>
           )}
         </div>
@@ -155,5 +131,4 @@ const ProductModal = ({ product, onClose }) => {
     </div>
   );
 };
-
 export default ProductModal;
