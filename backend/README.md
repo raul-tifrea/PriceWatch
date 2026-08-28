@@ -7,7 +7,7 @@ This component is responsible for orchestrating the web scraping processes, stor
 ## Core Responsibilities
 
 1. **Web Scraping:** Uses `BeautifulSoup` and `httpx` to periodically scrape supported retail websites (such as `cel.ro`).
-2. **Database:** Stores product definitions, listings, and price points using `SQLAlchemy` and `PostgreSQL`.
+2. **Database:** Stores product definitions, listings, and price points using `SQLAlchemy` with `PostgreSQL`.
 3. **API server:** Serves endpoints built with `FastAPI` to retrieve and manage scraped data.
 
 ## Adding a New Scraper

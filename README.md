@@ -7,7 +7,7 @@ PriceWatch is a full-stack web scraper and tracking application. It automaticall
 - **Price Tracking:** View the historical scraped price data on an interactive chart.
 
 ## Tech Stack
-- Backend: Python, FastAPI, PostgreSQL, BeautifulSoup.
+- Backend: Python, FastAPI, SQLAlchemy, PostgreSQL, BeautifulSoup.
 - Frontend: React, Vite, Vanilla CSS.
 
 ## How to Run
