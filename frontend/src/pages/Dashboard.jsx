@@ -7,6 +7,7 @@ function Dashboard() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [sortBy, setSortBy] = useState('newest'); // 'newest', 'drop', 'price-asc', 'price-desc'
 
   const fetchProducts = async () => {
     try {
@@ -21,6 +22,11 @@ function Dashboard() {
 
   useEffect(() => {
     fetchProducts();
+    // Silently poll for new prices every 60 seconds
+    const interval = setInterval(() => {
+      fetchProducts();
+    }, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleRefresh = async () => {
@@ -45,6 +51,24 @@ function Dashboard() {
     }
   };
 
+  const sortedProducts = [...products].sort((a, b) => {
+    if (sortBy === 'newest') {
+      return new Date(b.created_at) - new Date(a.created_at);
+    }
+    if (sortBy === 'price-asc') {
+      return (a.current_price || 0) - (b.current_price || 0);
+    }
+    if (sortBy === 'price-desc') {
+      return (b.current_price || 0) - (a.current_price || 0);
+    }
+    if (sortBy === 'drop') {
+      const dropA = a.initial_price && a.current_price ? ((a.current_price - a.initial_price) / a.initial_price) : 0;
+      const dropB = b.initial_price && b.current_price ? ((b.current_price - b.initial_price) / b.initial_price) : 0;
+      return dropA - dropB; // Most negative (biggest drop) first
+    }
+    return 0;
+  });
+
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '3rem' }}>Loading products...</div>;
   }
@@ -68,8 +92,18 @@ function Dashboard() {
           <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>You aren't tracking any products yet.</p>
         </div>
       ) : (
-        <div className="products-grid">
-          {products.map(product => (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <span className="text-muted text-small">Sort by:</span>
+            <div className="toggle-group">
+              <button className={`toggle-btn ${sortBy === 'newest' ? 'active' : ''}`} onClick={() => setSortBy('newest')}>Newest</button>
+              <button className={`toggle-btn ${sortBy === 'drop' ? 'active' : ''}`} onClick={() => setSortBy('drop')}>Biggest Drop</button>
+              <button className={`toggle-btn ${sortBy === 'price-asc' ? 'active' : ''}`} onClick={() => setSortBy('price-asc')}>Price: Low</button>
+              <button className={`toggle-btn ${sortBy === 'price-desc' ? 'active' : ''}`} onClick={() => setSortBy('price-desc')}>Price: High</button>
+            </div>
+          </div>
+          <div className="products-grid">
+            {sortedProducts.map(product => (
             <ProductCard 
               key={product.id} 
               product={product} 
@@ -77,6 +111,7 @@ function Dashboard() {
             />
           ))}
         </div>
+        </>
       )}
     </div>
   );

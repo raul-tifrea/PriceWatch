@@ -1,19 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #0d1117;
-  --surface-color: #161b22;
-  --surface-border: #30363d;
-  --primary-color: #58a6ff;
-  --primary-hover: #3182ce;
-  --danger-color: #f85149;
-  --danger-hover: #da3633;
-  --success-color: #3fb950;
-  
-  --text-main: #c9d1d9;
-  --text-muted: #8b949e;
-  
+  /* Option B: Trading Terminal (Dark Default) */
+  --bg-color: #000000;
+  --surface-color: #121212;
+  --surface-border: #333333;
+  --primary-color: #22c55e;
+  --primary-hover: #16a34a;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --success-color: #10b981;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --modal-overlay: rgba(0, 0, 0, 0.8);
+  --input-bg: #121212;
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme="light"] {
+  /* Option D: Clean Minimalist (Light) */
+  --bg-color: #f8fafc;
+  --surface-color: #ffffff;
+  --surface-border: #e2e8f0;
+  --primary-color: #4338ca;
+  --primary-hover: #3730a3;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --success-color: #10b981;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --modal-overlay: rgba(248, 250, 252, 0.8);
+  --input-bg: #ffffff;
 }
 
 * {
@@ -43,7 +60,7 @@ a:hover {
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
@@ -71,15 +88,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .header-title {
   font-size: 2rem;
-  background: linear-gradient(90deg, #58a6ff, #a371f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-main);
   font-weight: 700;
 }
 
 /* Glassmorphism Card */
 .card {
-  background-color: rgba(22, 27, 34, 0.7);
+  background-color: color-mix(in srgb, var(--surface-color) 80%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--surface-border);
@@ -125,7 +140,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary {
   background-color: var(--primary-color);
-  color: #0d1117;
+  color: var(--bg-color);
   border-color: var(--primary-color);
 }
 
@@ -173,7 +188,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1rem;
   font-family: inherit;
   color: var(--text-main);
-  background-color: #0d1117;
+  background-color: var(--input-bg);
   border: 1px solid var(--surface-border);
   border-radius: 6px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -183,6 +198,17 @@ h1, h2, h3, h4, h5, h6 {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+}
+
+/* Hide number input arrows/spinners */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
 }
 
 /* Grid */
@@ -220,7 +246,7 @@ h1, h2, h3, h4, h5, h6 {
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(13, 17, 23, 0.8);
+  background-color: var(--modal-overlay);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   display: flex;
@@ -238,6 +264,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 24px 48px rgba(0,0,0,0.5);
   position: relative;
   display: flex;
@@ -317,7 +344,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .toggle-btn:hover {
-  background-color: rgba(255,255,255,0.05);
+  background-color: color-mix(in srgb, var(--text-main) 10%, transparent);
 }
 
 .toggle-btn.active {
@@ -353,4 +380,23 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-main);
+}
+
+/* Retailer Badges */
+.badge-celro {
+  background-color: rgba(255, 204, 0, 0.15);
+  color: color-mix(in srgb, #ffcc00 50%, var(--text-main));
+  border: 1px solid rgba(255, 204, 0, 0.4);
+}
+
+.badge-altex {
+  background-color: rgba(226, 6, 19, 0.15);
+  color: color-mix(in srgb, #e20613 70%, var(--text-main));
+  border: 1px solid rgba(226, 6, 19, 0.4);
+}
+
+.badge-unknown {
+  background-color: rgba(88, 166, 255, 0.15);
+  color: color-mix(in srgb, #58a6ff 70%, var(--text-main));
+  border: 1px solid rgba(88, 166, 255, 0.4);
 }

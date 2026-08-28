@@ -13,9 +13,6 @@ const ProductModal = ({ product, onClose }) => {
     let cutoffDate = new Date();
     
     switch (timeRange) {
-      case '1D':
-        cutoffDate.setDate(now.getDate() - 1);
-        break;
       case '1W':
         cutoffDate.setDate(now.getDate() - 7);
         break;
@@ -69,7 +66,7 @@ const ProductModal = ({ product, onClose }) => {
           {/* Time Range Toggles */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
             <div className="toggle-group">
-              {['1D', '1W', '1M', '6M', 'MAX'].map(range => (
+              {['1W', '1M', '6M', 'MAX'].map(range => (
                 <button 
                   key={range}
                   className={`toggle-btn ${timeRange === range ? 'active' : ''}`}
@@ -86,26 +83,28 @@ const ProductModal = ({ product, onClose }) => {
             {filteredHistory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={filteredHistory} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#30363d" vertical={false} />
-                  <XAxis dataKey="date" stroke="#8b949e" fontSize={12} tickFormatter={(tick) => tick.split(' ')[0]} />
-                  <YAxis stroke="#8b949e" fontSize={12} domain={['auto', 'auto']} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" vertical={false} />
+                  <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickFormatter={(tick) => tick.split(' ')[0]} />
+                  <YAxis stroke="var(--text-muted)" fontSize={12} domain={['auto', 'auto']} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#161b22', borderColor: '#30363d', color: '#c9d1d9' }}
-                    itemStyle={{ color: '#58a6ff' }}
+                    contentStyle={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--surface-border)', color: 'var(--text-main)' }}
+                    itemStyle={{ color: 'var(--primary-color)' }}
                     formatter={(value) => [`${value} RON`, 'Price']}
                   />
                   <Line 
-                    type="stepAfter" 
+                    type="monotone" 
                     dataKey="price" 
-                    stroke="#58a6ff" 
-                    strokeWidth={2}
-                    dot={{ r: 4, fill: '#161b22', stroke: '#58a6ff', strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: '#58a6ff' }}
+                    stroke="var(--primary-color)" 
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: 'var(--surface-color)', stroke: 'var(--primary-color)', strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: 'var(--primary-color)' }}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
                   />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #30363d', borderRadius: '6px' }}>
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--surface-border)', borderRadius: '6px' }}>
                 <span className="text-muted">No data in this timeframe</span>
               </div>
             )}
