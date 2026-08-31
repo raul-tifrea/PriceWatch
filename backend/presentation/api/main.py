@@ -6,7 +6,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from backend.infrastructure.db.engine import SessionLocal
-from backend.application.use_cases import AddProduct, RefreshPrices, GetPriceHistory, RemoveProduct
+from backend.application.use_cases import AddProduct, AddProductFromExtension, RefreshPrices, GetPriceHistory, RemoveProduct
 from backend.infrastructure.db.repositories import ProductRepository
 from backend.infrastructure.scrapers.factory import ScraperFactory
 from backend.domain.events import PriceEventBus
@@ -78,6 +78,30 @@ def list_products(db = Depends(get_db)):
 def add_product(payload: ProductCreate, db = Depends(get_db)):
     uc = AddProduct(db)
     product = uc.execute(name=payload.name, url=payload.url)
+    return {"message": "success", "id": str(product.id)}
+class ProductFromExtension(BaseModel):
+    name: str
+    url: str
+    retailer_id: str
+    title: str
+    price: float
+    external_id: str
+    image_url: Optional[str] = None
+    currency: str = "RON"
+@app.post("/api/products/from-extension")
+def add_product_from_extension(payload: ProductFromExtension, db = Depends(get_db)):
+    from decimal import Decimal
+    uc = AddProductFromExtension(db)
+    product = uc.execute(
+        name=payload.name,
+        url=payload.url,
+        retailer_id=payload.retailer_id,
+        title=payload.title,
+        price=Decimal(str(payload.price)),
+        external_id=payload.external_id,
+        image_url=payload.image_url,
+        currency=payload.currency,
+    )
     return {"message": "success", "id": str(product.id)}
 @app.delete("/api/products/{product_id}")
 def remove_product(product_id: UUID, db = Depends(get_db)):

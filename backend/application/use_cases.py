@@ -1,5 +1,6 @@
 from __future__ import annotations
 import logging
+from decimal import Decimal
 from uuid import UUID
 from datetime import datetime
 from sqlalchemy.orm import Session
@@ -19,6 +20,56 @@ class AddProduct:
         self.product_repo.add(product)
         self.session.commit()
         logger.info("Added product: %r (url: %r)", name, url)
+        return product
+class AddProductFromExtension:
+    def __init__(self, session: Session) -> None:
+        self.session = session
+        self.product_repo = ProductRepository(session)
+        self.price_repo = PriceRepository(session)
+        self.event_bus = PriceEventBus()
+    def execute(
+        self,
+        name: str,
+        url: str,
+        retailer_id: str,
+        title: str,
+        price: Decimal,
+        external_id: str,
+        image_url: str | None = None,
+        currency: str = "RON",
+    ) -> Product:
+        product = Product(name=name, url=url)
+        self.product_repo.add(product)
+        existing = self.price_repo.get_listing_by_external_id(retailer_id, external_id)
+        if existing:
+            listing = existing
+        else:
+            listing = Listing(
+                product_id=product.id,
+                retailer_id=retailer_id,
+                title=title,
+                price=price,
+                currency=currency,
+                url=url,
+                external_id=external_id,
+                image_url=image_url,
+            )
+            self.price_repo.add_listing(listing)
+        pt = PricePoint(listing_id=listing.id, price=price)
+        self.price_repo.add_price_point(pt)
+        event = PriceEvent(
+            product_id=product.id,
+            listing_id=listing.id,
+            retailer_id=retailer_id,
+            title=title,
+            new_price=price,
+            currency=currency,
+            url=url,
+            old_price=None,
+        )
+        self.event_bus.publish(event)
+        self.session.commit()
+        logger.info("Added product from extension: %r (%s)", name, retailer_id)
         return product
 class RefreshPrices:
     def __init__(self, session: Session, factory: ScraperFactory, event_bus: PriceEventBus) -> None:

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PriceWatch</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 280px;
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+    }
+
+    .header {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+
+    .header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .header span {
+      font-size: 11px;
+      color: #8b949e;
+      display: block;
+    }
+
+    .section {
+      padding: 14px 18px;
+    }
+
+    .supported-sites {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .site-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #8b949e;
+      font-size: 12px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4f8ef7;
+      flex-shrink: 0;
+    }
+
+    .label {
+      color: #8b949e;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .tip {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.5;
+    }
+
+    .tip strong {
+      color: #e6edf3;
+    }
+
+    .footer {
+      padding: 10px 18px 14px;
+      border-top: 1px solid #21262d;
+    }
+
+    .open-btn {
+      display: block;
+      width: 100%;
+      padding: 9px;
+      background: linear-gradient(135deg, #4f8ef7 0%, #6c63ff 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .open-btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="icons/icon48.png" alt="PriceWatch" />
+    <div>
+      <h1>PriceWatch</h1>
+      <span>Price tracker extension</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Supported Sites</div>
+    <div class="supported-sites">
+      <div class="site-row"><div class="dot"></div> cel.ro</div>
+      <div class="site-row"><div class="dot"></div> pcgarage.ro</div>
+      <div class="site-row"><div class="dot"></div> altex.ro</div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top: 0">
+    <div class="label">How to use</div>
+    <div class="tip">
+      Navigate to any product page on a supported site and click the
+      <strong>"+ Add to PriceWatch"</strong> button that appears in the bottom-right corner.
+    </div>
+  </div>
+
+  <div class="footer">
+    <a class="open-btn" href="http://localhost:5173" target="_blank">Open Dashboard</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
