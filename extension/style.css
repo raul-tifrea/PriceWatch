@@ -6,63 +6,60 @@
   right: 0;
   z-index: 2147483647;
 
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
 
-  padding: 0 14px;
-  height: 38px;
+  height: 40px;
+  width: 40px; /* Small initially */
+  overflow: hidden; /* Hide the text when collapsed */
+  padding: 0;
 
   background: #121212;
   color: #f3f4f6;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
-  letter-spacing: 0.2px;
-  line-height: 1;
-
+  
   border: 1px solid #333333;
   border-right: none;
   border-radius: 8px 0 0 8px;
   cursor: pointer;
-
   box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.4);
 
   transform: translateY(-50%);
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.2s ease,
-    background 0.15s ease,
-    border-color 0.15s ease;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1), background 0.15s ease, border-color 0.15s ease;
 
   user-select: none;
-  white-space: nowrap;
   -webkit-font-smoothing: antialiased;
 }
 
-#pricewatch-btn::before {
-  content: "";
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Ccircle cx='7' cy='7' r='1.5' fill='%2322c55e' stroke='none'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: contain;
-  transition: transform 0.18s ease;
-}
-
 #pricewatch-btn:hover {
+  width: 172px; /* Expand to show text */
   background: #1e1e1e;
   border-color: #22c55e;
-  transform: translateY(-50%) translateX(-4px);
-  box-shadow: -4px 6px 16px rgba(0, 0, 0, 0.5);
 }
 
-#pricewatch-btn:active {
-  transform: translateY(-50%) translateX(0px);
-  box-shadow: -1px 2px 6px rgba(0, 0, 0, 0.4);
+.pw-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pw-icon::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Ccircle cx='7' cy='7' r='1.5' fill='%2322c55e' stroke='none'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.pw-text {
+  white-space: nowrap;
+  padding-right: 14px;
 }
 
 #pricewatch-btn.pricewatch-btn--loading {
@@ -72,7 +69,7 @@
   color: #9ca3af;
 }
 
-#pricewatch-btn.pricewatch-btn--loading::before {
+#pricewatch-btn.pricewatch-btn--loading .pw-icon::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Ccircle cx='7' cy='7' r='1.5' fill='%239ca3af' stroke='none'/%3E%3C/svg%3E");
   animation: pw-spin 1s linear infinite;
 }
@@ -83,7 +80,7 @@
   color: #4ade80;
 }
 
-#pricewatch-btn.pricewatch-btn--success::before {
+#pricewatch-btn.pricewatch-btn--success .pw-icon::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
 }
 
@@ -93,7 +90,7 @@
   color: #f87171;
 }
 
-#pricewatch-btn.pricewatch-btn--error::before {
+#pricewatch-btn.pricewatch-btn--error .pw-icon::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f87171' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='8' x2='12' y2='12'/%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'/%3E%3C/svg%3E");
 }
 

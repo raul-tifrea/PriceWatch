@@ -60,7 +60,7 @@ def list_products(db = Depends(get_db)):
                     initial_price = float(points[0].price)
             for pt in points:
                 formatted_history.append({
-                    "date": pt.recorded_at.strftime("%Y-%m-%d %H:%M"),
+                    "date": pt.recorded_at.isoformat(),
                     "price": float(pt.price),
                     "retailer": retailer_id
                 })
@@ -68,7 +68,7 @@ def list_products(db = Depends(get_db)):
             "id": str(p.id),
             "name": p.name,
             "url": p.url,
-            "created_at": p.created_at.strftime("%Y-%m-%d"),
+            "created_at": p.created_at.isoformat(),
             "current_price": current_price,
             "initial_price": initial_price,
             "history": formatted_history
@@ -91,14 +91,21 @@ class ProductFromExtension(BaseModel):
 @app.post("/api/products/from-extension")
 def add_product_from_extension(payload: ProductFromExtension, db = Depends(get_db)):
     from decimal import Decimal
+    import hashlib
+    
     uc = AddProductFromExtension(db)
+    
+    ext_id = payload.external_id
+    if len(ext_id) > 128:
+        ext_id = hashlib.sha256(ext_id.encode('utf-8')).hexdigest()
+
     product = uc.execute(
         name=payload.name,
         url=payload.url,
         retailer_id=payload.retailer_id,
         title=payload.title,
         price=Decimal(str(payload.price)),
-        external_id=payload.external_id,
+        external_id=ext_id,
         image_url=payload.image_url,
         currency=payload.currency,
     )

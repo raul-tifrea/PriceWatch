@@ -43,17 +43,50 @@
     if (retailerId === "cel.ro") {
       const form = document.querySelector("form[name='buy'] input[name='products_id']");
       if (form) return form.value;
-      const m = url.match(/-p(\d+)(?:[-/.]|$)/);
+      const m = url.match(/-p([a-zA-Z0-9_-]+)(?:[-/.]|$)/);
       if (m) return m[1];
     }
     // Fallback: use full URL as ID
     return url;
   }
 
+  function parseRomanianPrice(rawStr) {
+    let s = String(rawStr).replace(/[^\d.,]/g, "");
+    if (!s) return null;
+
+    const lastComma = s.lastIndexOf(',');
+    const lastDot = s.lastIndexOf('.');
+
+    if (lastComma > -1 && lastDot > -1) {
+      if (lastComma > lastDot) {
+        s = s.replace(/\./g, "").replace(",", ".");
+      } else {
+        s = s.replace(/,/g, "");
+      }
+    } else if (lastComma > -1) {
+      const parts = s.split(',');
+      if (parts[parts.length - 1].length === 3) {
+        s = s.replace(/,/g, "");
+      } else {
+        s = s.replace(",", ".");
+      }
+    } else if (lastDot > -1) {
+      const parts = s.split('.');
+      if (parts[parts.length - 1].length === 3) {
+        s = s.replace(/\./g, "");
+      }
+    }
+    const val = parseFloat(s);
+    return isNaN(val) ? null : val;
+  }
+
   function extractPrice(product) {
-    const offers = Array.isArray(product.offers) ? product.offers[0] : product.offers;
-    if (offers && offers.price != null) {
-      return parseFloat(String(offers.price).replace(",", "."));
+    if (product) {
+      const offers = Array.isArray(product.offers) ? product.offers[0] : product.offers;
+      if (offers && offers.price != null) {
+        const p = parseRomanianPrice(offers.price);
+        if (p != null && p > 0) return p;
+      }
     }
     // CSS fallbacks
     const selectors = [
@@ -67,18 +100,19 @@
       const el = document.querySelector(sel);
       if (el) {
         const raw = el.getAttribute("content") || el.textContent || "";
-        const cleaned = raw.replace(/[^\d.,]/g, "").replace(",", ".");
-        const val = parseFloat(cleaned);
-        if (!isNaN(val) && val > 0) return val;
+        const p = parseRomanianPrice(raw);
+        if (p != null && p > 0) return p;
       }
     }
     return null;
   }
 
   function extractImage(product) {
-    const img = product.image;
-    if (Array.isArray(img)) return img[0] || null;
-    if (typeof img === "string") return img;
+    if (product) {
+      const img = product.image;
+      if (Array.isArray(img)) return img[0] || null;
+      if (typeof img === "string") return img;
+    }
     const el = document.querySelector(".product-image img, .gallery-image img, [itemprop='image']");
     return el ? (el.src || el.getAttribute("content")) : null;
   }
@@ -104,12 +138,7 @@
     if (!retailerId) return;
 
     const product = extractJsonLdProduct();
-    if (!product) {
-      showNotification("Could not find product data on this page.", true);
-      return;
-    }
-
-    const title = product.name || document.querySelector("h1")?.textContent?.trim() || "Unknown Product";
+    const title = (product && product.name) || document.querySelector("h1")?.textContent?.trim() || "Unknown Product";
     const price = extractPrice(product);
     const imageUrl = extractImage(product);
     const externalId = extractExternalId(retailerId);
@@ -120,7 +149,7 @@
     }
 
     btn.classList.add("pricewatch-btn--loading");
-    btn.textContent = "Adding...";
+    btn.querySelector(".pw-text").textContent = "Adding...";
 
     try {
       const response = await fetch(PRICEWATCH_API, {
@@ -139,12 +168,12 @@
       });
 
       if (response.ok) {
-        btn.textContent = "Added!";
+        btn.querySelector(".pw-text").textContent = "Added!";
         btn.classList.remove("pricewatch-btn--loading");
         btn.classList.add("pricewatch-btn--success");
         showNotification(`"${title.slice(0, 50)}" added to PriceWatch!`);
         setTimeout(() => {
-          btn.textContent = "+ Add to PriceWatch";
+          btn.querySelector(".pw-text").textContent = "Add to PriceWatch";
           btn.classList.remove("pricewatch-btn--success");
         }, 3000);
       } else {
@@ -152,34 +181,61 @@
         throw new Error(err.detail || "Server error");
       }
     } catch (e) {
-      btn.textContent = "Failed — backend running?";
+      btn.querySelector(".pw-text").textContent = "Failed?";
       btn.classList.remove("pricewatch-btn--loading");
       btn.classList.add("pricewatch-btn--error");
       showNotification("Error: " + e.message, true);
       setTimeout(() => {
-        btn.textContent = "+ Add to PriceWatch";
+        btn.querySelector(".pw-text").textContent = "Add to PriceWatch";
         btn.classList.remove("pricewatch-btn--error");
       }, 4000);
     }
   }
 
+  function isProductPage() {
+    const retailerId = getRetailerId();
+    if (!retailerId) return false;
+    
+    // 1. Try URL patterns
+    const url = location.href;
+    if (retailerId === "altex.ro" && url.match(/\/cpd\//)) return true;
+    if (retailerId === "pcgarage.ro" && url.match(/-p\d+/)) return true;
+    if (retailerId === "cel.ro" && url.match(/-p[a-zA-Z0-9_-]+/)) return true;
+    
+    // 2. Try JSON-LD structure
+    if (extractJsonLdProduct()) return true;
+
+    // 3. Try finding a price on the page
+    const priceSelectors = [
+      "[itemprop='price']", ".Price-int", "span.price", ".product-price", 
+      "[data-testid='price']", ".price_new", ".price_num", ".price"
+    ];
+    for (const sel of priceSelectors) {
+      if (document.querySelector(sel)) return true;
+    }
+
+    return false;
+  }
+
   function injectButton() {
     if (document.getElementById(BUTTON_ID)) return;
-
-    const product = extractJsonLdProduct();
-    if (!product) return;
+    if (!isProductPage()) return;
 
     const btn = document.createElement("button");
     btn.id = BUTTON_ID;
     btn.className = "pricewatch-btn";
-    btn.textContent = "+ Add to PriceWatch";
+    btn.innerHTML = `<span class="pw-icon"></span><span class="pw-text">Add to PriceWatch</span>`;
     btn.addEventListener("click", handleClick);
     document.body.appendChild(btn);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectButton);
-  } else {
-    injectButton();
-  }
+  // Handle SPA navigation and dynamic DOM updates
+  setInterval(() => {
+    if (isProductPage()) {
+      injectButton();
+    } else {
+      const existing = document.getElementById(BUTTON_ID);
+      if (existing) existing.remove();
+    }
+  }, 1000);
 })();
