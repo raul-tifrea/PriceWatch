@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from decimal import Decimal
 from uuid import UUID, uuid4
 from datetime import datetime
@@ -35,7 +36,7 @@ def session():
     session.close()
 def test_add_product_creates_product(session):
     use_case = AddProduct(session)
-    product = use_case.execute("Laptop", "http://mock.retailer/laptop-i7")
+    product = use_case.execute("Laptop", "http://mock.retailer/laptop-i7", uuid.uuid4())
     assert product.name == "Laptop"
     assert product.url == "http://mock.retailer/laptop-i7"
     assert product.id is not None
@@ -45,7 +46,7 @@ def test_refresh_prices_emits_event_on_price_drop(session):
     event_bus.subscribe(events.append)
     factory = ScraperFactory()
     add_product_uc = AddProduct(session)
-    product = add_product_uc.execute("Laptop", "http://mock.retailer/1")
+    product = add_product_uc.execute("Laptop", "http://mock.retailer/1", uuid.uuid4())
     listing1 = Listing(
         product_id=product.id,
         retailer_id="mock.retailer",
@@ -70,5 +71,5 @@ def test_refresh_prices_emits_event_on_price_drop(session):
     assert events[0].is_price_drop
     assert events[0].old_price == Decimal("4000.00")
     assert events[0].new_price == Decimal("3500.00")
-    add_product_uc.execute("Laptop2", "http://mock.retailer/2")
+    add_product_uc.execute("Laptop2", "http://mock.retailer/2", uuid.uuid4())
     refresh_uc.execute() 
