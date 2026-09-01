@@ -14,10 +14,10 @@ class AddProduct:
         self.session = session
         self.product_repo = ProductRepository(session)
     def execute(
-        self, name: str, url: str
+        self, name: str, url: str, user_id
     ) -> Product:
         product = Product(name=name, url=url)
-        self.product_repo.add(product)
+        self.product_repo.add(product, user_id)
         self.session.commit()
         logger.info("Added product: %r (url: %r)", name, url)
         return product
@@ -35,11 +35,12 @@ class AddProductFromExtension:
         title: str,
         price: Decimal,
         external_id: str,
+        user_id,
         image_url: str | None = None,
         currency: str = "RON",
     ) -> Product:
         product = Product(name=name, url=url)
-        self.product_repo.add(product)
+        self.product_repo.add(product, user_id)
         existing = self.price_repo.get_listing_by_external_id(retailer_id, external_id)
         if existing:
             listing = existing
@@ -138,7 +139,6 @@ class RemoveProduct:
         self.product_repo.delete(product_id)
         self.session.commit()
         logger.info("Removed product ID: %s", product_id)
-
 class GetPriceHistory:
     def __init__(self, session: Session) -> None:
         self.session = session

@@ -14,16 +14,38 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 class Base(DeclarativeBase):
     pass
+class UserORM(Base):
+    __tablename__ = "users"
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    products: Mapped[list["ProductORM"]] = relationship(
+        "ProductORM", back_populates="user", cascade="all, delete-orphan"
+    )
+    def __repr__(self) -> str:
+        return f"<UserORM id={self.id} email={self.email!r}>"
 class ProductORM(Base):
     __tablename__ = "products"
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     url: Mapped[str] = mapped_column(String(1024), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
+    user: Mapped[UserORM] = relationship("UserORM", back_populates="products")
     listings: Mapped[list[ListingORM]] = relationship(
         "ListingORM", back_populates="product", cascade="all, delete-orphan"
     )
@@ -76,4 +98,4 @@ class PricePointORM(Base):
     )
     listing: Mapped[ListingORM] = relationship("ListingORM", back_populates="price_points")
     def __repr__(self) -> str:
-        return f"<PricePointORM id={self.id} price={self.price} at={self.recorded_at}>"
+        return f"<PricePointORM id={self.id} price={self.price} at={self.recorded_at}>"

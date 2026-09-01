@@ -31,4 +31,4 @@ class PricePoint:
     listing_id: UUID
     price: Decimal
     id: UUID = field(default_factory=uuid4)
-    recorded_at: datetime = field(default_factory=datetime.utcnow)
+    recorded_at: datetime = field(default_factory=datetime.utcnow)

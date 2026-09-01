@@ -8,9 +8,10 @@ from backend.infrastructure.db.orm_models import (
     PricePointORM,
     ProductORM,
 )
-def _product_to_orm(product: Product) -> ProductORM:
+def _product_to_orm(product: Product, user_id: uuid.UUID) -> ProductORM:
     return ProductORM(
         id=product.id,
+        user_id=user_id,
         name=product.name,
         url=product.url,
         created_at=product.created_at,
@@ -65,10 +66,10 @@ def _orm_to_price_point(row: PricePointORM) -> PricePoint:
 class ProductRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
-    def add(self, product: Product) -> Product:
-        orm_row = _product_to_orm(product)
+    def add(self, product: Product, user_id: uuid.UUID) -> Product:
+        orm_row = _product_to_orm(product, user_id)
         self._session.add(orm_row)
-        self._session.flush()  
+        self._session.flush()
         return _orm_to_product(orm_row)
     def get_by_id(self, product_id: uuid.UUID) -> Product | None:
         row = self._session.get(ProductORM, product_id)
@@ -76,6 +77,21 @@ class ProductRepository:
     def list_all(self) -> list[Product]:
         rows = self._session.query(ProductORM).order_by(ProductORM.created_at).all()
         return [_orm_to_product(r) for r in rows]
+    def list_for_user(self, user_id: uuid.UUID) -> list[Product]:
+        rows = (
+            self._session.query(ProductORM)
+            .filter_by(user_id=user_id)
+            .order_by(ProductORM.created_at)
+            .all()
+        )
+        return [_orm_to_product(r) for r in rows]
+    def get_by_url_for_user(self, url: str, user_id: uuid.UUID) -> Product | None:
+        row = (
+            self._session.query(ProductORM)
+            .filter_by(url=url, user_id=user_id)
+            .first()
+        )
+        return _orm_to_product(row) if row else None
     def delete(self, product_id: uuid.UUID) -> None:
         row = self._session.get(ProductORM, product_id)
         if row:
@@ -118,4 +134,4 @@ class PriceRepository:
             .order_by(PricePointORM.recorded_at)
             .all()
         )
-        return [_orm_to_price_point(r) for r in rows]
+        return [_orm_to_price_point(r) for r in rows]

@@ -69,7 +69,6 @@ function AddProduct() {
             />
             <small className="text-muted" style={{ display: 'block', marginTop: '0.4rem' }}>Currently supported: cel.ro</small>
           </div>
-
           <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
             <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 1, padding: '0.8rem' }}>
               {loading ? (

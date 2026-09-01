@@ -26,10 +26,16 @@
       "js": ["content.js"],
       "css": ["style.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://localhost:5173/*"],
+      "js": ["dashboard_bridge.js"],
+      "run_at": "document_idle"
     }
   ],
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
   "host_permissions": [
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "http://localhost:5173/*"
   ]
 }

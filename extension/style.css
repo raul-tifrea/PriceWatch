@@ -1,44 +1,34 @@
-/* PriceWatch Extension — Injected Styles */
-
 #pricewatch-btn {
   position: fixed;
   top: 50%;
   right: 0;
   z-index: 2147483647;
-
   display: flex;
   align-items: center;
-
   height: 40px;
-  width: 40px; /* Small initially */
-  overflow: hidden; /* Hide the text when collapsed */
+  width: 40px; 
+  overflow: hidden; 
   padding: 0;
-
   background: #121212;
   color: #f3f4f6;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   font-size: 13.5px;
   font-weight: 500;
-  
   border: 1px solid #333333;
   border-right: none;
   border-radius: 8px 0 0 8px;
   cursor: pointer;
   box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.4);
-
   transform: translateY(-50%);
   transition: width 0.3s cubic-bezier(0.2, 0, 0, 1), background 0.15s ease, border-color 0.15s ease;
-
   user-select: none;
   -webkit-font-smoothing: antialiased;
 }
-
 #pricewatch-btn:hover {
-  width: 172px; /* Expand to show text */
+  width: 172px; 
   background: #1e1e1e;
   border-color: #22c55e;
 }
-
 .pw-icon {
   flex-shrink: 0;
   width: 40px;
@@ -47,7 +37,6 @@
   align-items: center;
   justify-content: center;
 }
-
 .pw-icon::before {
   content: "";
   width: 16px;
@@ -56,89 +45,71 @@
   background-size: contain;
   background-repeat: no-repeat;
 }
-
 .pw-text {
   white-space: nowrap;
   padding-right: 14px;
 }
-
 #pricewatch-btn.pricewatch-btn--loading {
   background: #1e1e1e;
   border-color: #333333;
   cursor: wait;
   color: #9ca3af;
 }
-
 #pricewatch-btn.pricewatch-btn--loading .pw-icon::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z'/%3E%3Ccircle cx='7' cy='7' r='1.5' fill='%239ca3af' stroke='none'/%3E%3C/svg%3E");
   animation: pw-spin 1s linear infinite;
 }
-
 #pricewatch-btn.pricewatch-btn--success {
   background: #0f2a1a;
   border-color: #22c55e;
   color: #4ade80;
 }
-
 #pricewatch-btn.pricewatch-btn--success .pw-icon::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
 }
-
 #pricewatch-btn.pricewatch-btn--error {
   background: #2a0f0f;
   border-color: #ef4444;
   color: #f87171;
 }
-
 #pricewatch-btn.pricewatch-btn--error .pw-icon::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f87171' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='8' x2='12' y2='12'/%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'/%3E%3C/svg%3E");
 }
-
-/* Notification toast */
 .pricewatch-notif {
   position: fixed;
   top: 50%;
   right: 180px;
   transform: translateY(-50%);
   z-index: 2147483647;
-
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 11px 16px;
   border-radius: 8px;
-
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   max-width: 300px;
-
   box-shadow: 0 4px 20px rgba(0,0,0,0.35);
   animation: pw-slide-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   -webkit-font-smoothing: antialiased;
 }
-
 .pricewatch-notif--success {
   background: #121212;
   color: #4ade80;
   border: 1px solid rgba(34, 197, 94, 0.3);
 }
-
 .pricewatch-notif--error {
   background: #121212;
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
-
 @keyframes pw-slide-in {
   from { opacity: 0; transform: translateY(-50%) translateX(16px) scale(0.95); }
   to   { opacity: 1; transform: translateY(-50%) translateX(0)   scale(1); }
 }
-
 @keyframes pw-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-

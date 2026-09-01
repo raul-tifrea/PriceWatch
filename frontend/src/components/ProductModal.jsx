@@ -123,7 +123,6 @@ const ProductModal = ({ product, onClose }) => {
                   {stats.avg.toFixed(2)} RON
                 </div>
               </div>
-
             </div>
           )}
         </div>

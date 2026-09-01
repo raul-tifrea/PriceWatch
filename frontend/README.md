@@ -1,21 +1,30 @@
 # PriceWatch Frontend
 
-Welcome to the frontend of **PriceWatch**, a web scraper and price tracking application!
-
-This part of the repository contains the React user interface, built with Vite.
+The frontend of PriceWatch is a single-page application (SPA) built with React and Vite. It serves as the primary dashboard for users to view and manage their tracked products.
 
 ## Overview
-The frontend connects to the backend API to:
-- Allow users to add new retailer URLs to scrape.
-- Display an interactive dashboard of all scraped products.
-- Visualize historical scraped price points on a line chart.
 
-## Setup
+The application connects to the FastAPI backend and provides the following capabilities:
+- User authentication (Login/Registration) via JWT.
+- A dashboard displaying all tracked products for the authenticated user.
+- Interactive data visualization of historical price trends using Recharts.
+- A responsive, component-based UI styled with vanilla CSS and CSS variables.
 
-Make sure you have Node.js installed, then run:
+## Key Components
+
+- **AuthContext:** Manages global authentication state and synchronizes token data across tabs and the Chrome extension via `window.postMessage`.
+- **ProductModal:** Handles the detailed view of a product, including the Recharts line chart for price history.
+- **api.js:** Configures the Axios HTTP client, including global interceptors for the Authorization header.
+
+## Setup Instructions
+
+Ensure Node.js is installed on your system.
 
 ```bash
+# Install dependencies
 npm install
+
+# Start the development server
 npm run dev
 ```
 

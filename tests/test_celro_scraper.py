@@ -3,7 +3,6 @@ from decimal import Decimal
 from uuid import uuid4
 import pytest
 from backend.infrastructure.scrapers.celro import CelRoScraper
-
 MOCK_HTML = """
 <!DOCTYPE html>
 <html lang="ro">
@@ -17,14 +16,11 @@ MOCK_HTML = """
 </body>
 </html>
 """
-
 def test_parse_product_page():
     scraper = CelRoScraper()
     pid = uuid4()
     url = "https://www.cel.ro/laptop-test"
-    
     listing = scraper.parse_product_page(MOCK_HTML, url, pid)
-    
     assert listing is not None
     assert listing.product_id == pid
     assert listing.retailer_id == "cel.ro"
@@ -34,12 +30,10 @@ def test_parse_product_page():
     assert listing.url == url
     assert listing.external_id == "12345"
     assert listing.image_url == "http://img.cel.ro/test.jpg"
-
 def test_parse_product_page_no_title():
     scraper = CelRoScraper()
     pid = uuid4()
     url = "https://www.cel.ro/laptop-test"
     html = "<html><body></body></html>"
-    
     listing = scraper.parse_product_page(html, url, pid)
     assert listing is None

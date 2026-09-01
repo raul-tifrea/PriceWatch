@@ -4,146 +4,99 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PriceWatch</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      width: 280px;
-      background: #0d1117;
-      color: #e6edf3;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 14px;
-    }
-
-    .header {
-      padding: 18px 18px 14px;
-      border-bottom: 1px solid #21262d;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header img {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-    }
-
-    .header h1 {
-      font-size: 15px;
-      font-weight: 700;
-      color: #e6edf3;
-    }
-
-    .header span {
-      font-size: 11px;
-      color: #8b949e;
-      display: block;
-    }
-
-    .section {
-      padding: 14px 18px;
-    }
-
-    .supported-sites {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .site-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #8b949e;
-      font-size: 12px;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #4f8ef7;
-      flex-shrink: 0;
-    }
-
-    .label {
-      color: #8b949e;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 8px;
-    }
-
-    .tip {
-      background: #161b22;
-      border: 1px solid #21262d;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 12px;
-      color: #8b949e;
-      line-height: 1.5;
-    }
-
-    .tip strong {
-      color: #e6edf3;
-    }
-
-    .footer {
-      padding: 10px 18px 14px;
-      border-top: 1px solid #21262d;
-    }
-
-    .open-btn {
-      display: block;
-      width: 100%;
-      padding: 9px;
-      background: linear-gradient(135deg, #4f8ef7 0%, #6c63ff 100%);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      transition: opacity 0.15s;
-    }
-
-    .open-btn:hover { opacity: 0.88; }
-  </style>
+  <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <div class="header">
-    <img src="icons/icon48.png" alt="PriceWatch" />
-    <div>
-      <h1>PriceWatch</h1>
-      <span>Price tracker extension</span>
+  <div id="app">
+    <!-- Login view -->
+    <div id="view-login" class="view">
+      <div class="popup-header">
+        <div class="popup-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>PriceWatch</span>
+        </div>
+      </div>
+      <div class="popup-body">
+        <p class="popup-desc">Log in to start tracking prices across Romanian stores.</p>
+        <div id="login-error" class="alert alert-error" style="display:none"></div>
+        <div class="field">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" placeholder="••••••••" />
+        </div>
+        <button id="btn-login" class="btn-primary">Log In</button>
+        <p class="switch-link">No account? <a href="#" id="go-register">Sign up</a></p>
+      </div>
+    </div>
+
+    <!-- Register view -->
+    <div id="view-register" class="view" style="display:none">
+      <div class="popup-header">
+        <div class="popup-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>PriceWatch</span>
+        </div>
+      </div>
+      <div class="popup-body">
+        <p class="popup-desc">Create a free account to track prices.</p>
+        <div id="register-error" class="alert alert-error" style="display:none"></div>
+        <div class="field">
+          <label for="reg-email">Email</label>
+          <input id="reg-email" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label for="reg-password">Password</label>
+          <input id="reg-password" type="password" placeholder="At least 6 characters" />
+        </div>
+        <button id="btn-register" class="btn-primary">Create Account</button>
+        <p class="switch-link">Already have one? <a href="#" id="go-login">Log in</a></p>
+      </div>
+    </div>
+
+    <!-- Logged in view -->
+    <div id="view-loggedin" class="view" style="display:none">
+      <div class="popup-header">
+        <div class="popup-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>PriceWatch</span>
+        </div>
+        <button id="btn-logout" class="btn-logout" title="Log out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="popup-body">
+        <div class="loggedin-info">
+          <div class="user-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="loggedin-label">Logged in as</div>
+            <div id="loggedin-email" class="loggedin-email"></div>
+          </div>
+        </div>
+        <div class="status-box status-success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Extension active. Visit a product page to track it.
+        </div>
+        <a href="http://localhost:5173" target="_blank" class="btn-dashboard">Open Dashboard ↗</a>
+      </div>
     </div>
   </div>
-
-  <div class="section">
-    <div class="label">Supported Sites</div>
-    <div class="supported-sites">
-      <div class="site-row"><div class="dot"></div> cel.ro</div>
-      <div class="site-row"><div class="dot"></div> pcgarage.ro</div>
-      <div class="site-row"><div class="dot"></div> altex.ro</div>
-    </div>
-  </div>
-
-  <div class="section" style="padding-top: 0">
-    <div class="label">How to use</div>
-    <div class="tip">
-      Navigate to any product page on a supported site and click the
-      <strong>"+ Add to PriceWatch"</strong> button that appears in the bottom-right corner.
-    </div>
-  </div>
-
-  <div class="footer">
-    <a class="open-btn" href="http://localhost:5173" target="_blank">Open Dashboard</a>
-  </div>
-
   <script src="popup.js"></script>
 </body>
 </html>
