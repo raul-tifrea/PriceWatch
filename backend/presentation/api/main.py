@@ -4,8 +4,7 @@ from uuid import UUID
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from backend.infrastructure.db.engine import SessionLocal
 from backend.infrastructure.db.orm_models import UserORM

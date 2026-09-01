@@ -138,7 +138,7 @@ class RemoveProduct:
     def execute(self, product_id: UUID) -> None:
         self.product_repo.delete(product_id)
         self.session.commit()
-        logger.info("Removed product ID: %s", product_id)
+        logger.info("Removed Product ID: %s", product_id)
 class GetPriceHistory:
     def __init__(self, session: Session) -> None:
         self.session = session
