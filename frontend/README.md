@@ -8,7 +8,7 @@ The application connects to the FastAPI backend and provides the following capab
 - User authentication (Login/Registration) via JWT.
 - A dashboard displaying all tracked products for the authenticated user.
 - Interactive data visualization of historical price trends using Recharts.
-- A responsive, component-based UI styled with vanilla CSS and CSS variables.
+- A responsive, component-based UI styled with CSS and CSS variables.
 
 ## Key Components
 
